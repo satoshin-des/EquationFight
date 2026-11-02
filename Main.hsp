@@ -1,0 +1,92 @@
+#cmpopt optcode 1
+#const WINX 640
+#const WINY 480
+
+screen 0, WINX, WINY
+
+newcom sc, "MSScriptControl.ScriptControl"
+sc("Language") = "JScript"
+
+cx = WINX / 2.0
+cy = WINY / 2.0
+scale = 40.0
+
+expr = "Math.sin(x) * 2 + Math.cos(x * 3)"
+
+comres res
+
+*titleScene
+	redraw 0
+	color 255, 255, 255 : boxf
+	color 180, 180, 180
+
+	; x軸とy軸
+	line 0, cy, WINX, cy
+	line cx, 0, cx, WINY
+
+	; スタートボタン
+	color 255, 0, 0
+	boxf cx - 50, cy + 20, cx + 50, cy + 50
+	color 255, 255, 255
+	font msgothic, 25
+	pos cx - strlen("START") * 6.25, cy + 25
+	mes "START"
+	if cx - 50 <= mousex & mousex <= cx + 50 & cy +20 <= mousey & mousey <= cy + 50 {
+		onclick *main
+	}
+
+	; Quitボタン
+	color 255, 0, 0
+	boxf cx - 50, cy + 70, cx + 50, cy + 100
+	color 255, 255, 255
+	font msgothic, 25
+	pos cx - strlen("QUIT") * 6.25, cy + 75
+	mes "QUIT"
+	if cx - 50 <= mousex & mousex <= cx + 50 & cy +70 <= mousey & mousey <= cy + 100 {
+		onclick *endGame
+	}
+	redraw 1
+	wait 16.6
+	
+	goto *titleScene
+
+*main
+	redraw 0
+	color 255, 255, 255 : boxf
+	color 180, 180, 180
+
+	; x軸とy軸
+	line 0, cy, WINX, cy
+	line cx, 0, cx, WINY
+	
+	color 255, 0, 0
+	first = 1
+	repeat WINX
+    	x = double(cnt - cx) / scale
+
+    	; JScriptで変数xへ代入
+    	sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
+
+    	; 数式をJScript側で評価してyへ代入
+    	sc->"Eval" expr
+    	y = double(res)
+    
+    	py = cy - y * scale
+    	if 0 <= py & py <= winy {
+        	if first {
+            	pos cnt, py
+            	first = 0
+        	} else {
+            	line cnt, py
+        	}
+    	} else {
+        	first = 1
+    	}
+	loop
+	redraw 1
+	wait 16.6
+
+	goto *main
+
+*endGame
+	end
