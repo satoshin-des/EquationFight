@@ -11,11 +11,13 @@ screen 0, WINX, WINY
 newcom sc, "MSScriptControl.ScriptControl"
 sc("Language") = "JScript"
 
-expr = "Math.sin(x) * 2 + Math.cos(x * 3)"
+expr = "sin(x) * 2 + cos(x * 3)"
+replacedExpr = ""
 
 comres res
 
 *titleScene
+	gosub *replaceFunctionString
 	redraw 0
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
@@ -68,7 +70,7 @@ comres res
 		sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
 
 		; 数式をJScript側で評価してyへ代入
-		sc->"Eval" expr
+		sc->"Eval" replacedExpr
 		y = double(res)
 	
 		py = CY - y * SCALE
@@ -83,6 +85,9 @@ comres res
 			first = 1
 		}
 	loop
+	font msgothic, 16
+	pos 0, 0: color 0, 0, 0
+	mes "eq: " + expr
 	redraw 1
 	wait 16.6
 
@@ -90,3 +95,9 @@ comres res
 
 *endGame
 	end
+
+*replaceFunctionString
+	replacedExpr = expr
+	strrep replacedExpr, "sin", "Math.sin"
+	strrep replacedExpr, "cos", "Math.cos"
+	return
