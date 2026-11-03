@@ -91,6 +91,7 @@ randomize
 	pos CX - strlen("SUBMIT") * 6.25, CY + 75
 	mes "SUBMIT"
 	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
+		loopTimes = 0
 		gosub *randomChoiceEquation
 		gosub *replaceFunctionString
 		onclick *hideInput
@@ -174,6 +175,20 @@ randomize
 	pos 0, 0: color 0, 0, 0
 	mes "eq: " + expr
 	mes "eq: " + compExpr
+
+	if loopTimes = WINX {
+		; Retryボタン
+		color 255, 0, 0
+		boxf CX - 50, CY + 70, CX + 50, CY + 100
+		color 255, 255, 255
+		font msgothic, 25
+		pos CX - strlen("RETRY") * 6.25, CY + 75
+		mes "RETRY"
+		if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
+			onclick *inputScene
+		}
+	}
+	
 	redraw 1
 	wait 16.6
 
@@ -181,7 +196,7 @@ randomize
 	if loopTimes > WINX {
 		loopTimes = WINX
 	}
-
+	
 	goto *mainScene
 
 *endGame
