@@ -1,4 +1,7 @@
 #cmpopt optcode 1
+
+#include "user32.as"
+
 #const WINX 640
 #const WINY 480
 #const CX WINX / 2.0
@@ -34,7 +37,7 @@ comres res
 	pos CX - strlen("START") * 6.25, CY + 25
 	mes "START"
 	if CX - 50 <= mousex & mousex <= CX + 50 & CY + 20 <= mousey & mousey <= CY + 50 {
-		onclick *main
+		onclick *inputScene
 	}
 
 	; Quitボタン
@@ -52,7 +55,39 @@ comres res
 	
 	goto *titleScene
 
-*main
+*inputScene
+	redraw 0
+	color 255, 255, 255 : boxf
+	color 180, 180, 180
+
+	; x軸とy軸
+	line 0, CY, WINX, CY
+	line CX, 0, CX, WINY
+
+	; 決定
+	color 255, 0, 0
+	boxf CX - 50, CY + 70, CX + 50, CY + 100
+	color 255, 255, 255
+	font msgothic, 25
+	pos CX - strlen("SUBMIT") * 6.25, CY + 75
+	mes "SUBMIT"
+	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
+		gosub *replaceFunctionString
+		onclick *hideInput
+	}
+	
+	pos CX - 250, 40
+	input expr, 500, 30, 0
+	
+	redraw 1
+	stop
+
+; inputオブジェクトの削除
+*hideInput
+	clrobj
+	goto *mainScene
+
+*mainScene
 	redraw 0
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
@@ -91,7 +126,7 @@ comres res
 	redraw 1
 	wait 16.6
 
-	goto *main
+	goto *mainScene
 
 *endGame
 	end
