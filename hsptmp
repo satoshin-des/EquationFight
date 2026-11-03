@@ -1,48 +1,72 @@
 #cmpopt optcode 1
+
+#include "user32.as"
+
 #const WINX 640
 #const WINY 480
+#const CX WINX / 2.0
+#const CY WINY / 2.0
+#const SCALE 40.0
+#const NUM_FUNCS 5
 
+title "EquationFight"
 screen 0, WINX, WINY
 
 newcom sc, "MSScriptControl.ScriptControl"
 sc("Language") = "JScript"
 
-cx = WINX / 2.0
-cy = WINY / 2.0
-scale = 40.0
-
-expr = "Math.sin(x) * 2 + Math.cos(x * 3)"
+compExpr = ""
+expr = "sin(x) * 2 + cos(x * 3)"
+replacedExpr = ""
+replacedCompExpr = ""
 
 comres res
 
+loopTimes = 0
+
+sdim funcs, 64, NUM_FUNCS
+funcs.0 = "sin(x)"
+funcs.1 = "cos(x)"
+funcs.2 = "tan(x)"
+funcs.3 = "log(abs(x))"
+funcs.4 = "sqrt(abs(x))"
+
+randomize
+
 *titleScene
+	gosub *replaceFunctionString
 	redraw 0
+	
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
 	; x軸とy軸
-	line 0, cy, WINX, cy
-	line cx, 0, cx, WINY
+	line 0, CY, WINX, CY
+	line CX, 0, CX, WINY
 
+	font msgothic, 50
+	color 120, 0, 0 : pos 10, 10
+	mes "EquationFight"
+	
 	; スタートボタン
 	color 255, 0, 0
-	boxf cx - 50, cy + 20, cx + 50, cy + 50
+	boxf CX - 50, CY + 20, CX + 50, CY + 50
 	color 255, 255, 255
 	font msgothic, 25
-	pos cx - strlen("START") * 6.25, cy + 25
+	pos CX - strlen("START") * 6.25, CY + 25
 	mes "START"
-	if cx - 50 <= mousex & mousex <= cx + 50 & cy +20 <= mousey & mousey <= cy + 50 {
-		onclick *main
+	if CX - 50 <= mousex & mousex <= CX + 50 & CY + 20 <= mousey & mousey <= CY + 50 {
+		onclick *inputScene
 	}
 
 	; Quitボタン
 	color 255, 0, 0
-	boxf cx - 50, cy + 70, cx + 50, cy + 100
+	boxf CX - 50, CY + 70, CX + 50, CY + 100
 	color 255, 255, 255
 	font msgothic, 25
-	pos cx - strlen("QUIT") * 6.25, cy + 75
+	pos CX - strlen("QUIT") * 6.25, CY + 75
 	mes "QUIT"
-	if cx - 50 <= mousex & mousex <= cx + 50 & cy +70 <= mousey & mousey <= cy + 100 {
+	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
 		onclick *endGame
 	}
 	redraw 1
@@ -50,43 +74,165 @@ comres res
 	
 	goto *titleScene
 
-*main
+*inputScene
 	redraw 0
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
 	; x軸とy軸
-	line 0, cy, WINX, cy
-	line cx, 0, cx, WINY
-	
+	line 0, CY, WINX, CY
+	line CX, 0, CX, WINY
+
+	; 決定
 	color 255, 0, 0
-	first = 1
+	boxf CX - 50, CY + 70, CX + 50, CY + 100
+	color 255, 255, 255
+	font msgothic, 25
+	pos CX - strlen("SUBMIT") * 6.25, CY + 75
+	mes "SUBMIT"
+	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
+		loopTimes = 0
+		gosub *randomChoiceEquation
+		gosub *replaceFunctionString
+		onclick *hideInput
+	}
+	
+	pos CX - 250, 40
+	input expr, 500, 30, 0
+	
+	redraw 1
+	stop
+
+; inputオブジェクトの削除
+*hideInput
+	clrobj
+	goto *mainScene
+
+*mainScene
+	redraw 0
+	color 255, 255, 255 : boxf
+	color 180, 180, 180
+
+	; x軸とy軸
+	line 0, CY, WINX, CY
+	line CX, 0, CX, WINY
+	
+	firstPlayer = 1
+
+	; プレイヤーの曲線を描画
 	repeat WINX
-    	x = double(cnt - cx) / scale
+		color 255, 0, 0
+		x = double(cnt - CX) / SCALE
 
-    	; JScriptで変数xへ代入
-    	sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
+		; JScriptで変数xへ代入
+		sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
 
-    	; 数式をJScript側で評価してyへ代入
-    	sc->"Eval" expr
-    	y = double(res)
-    
-    	py = cy - y * scale
-    	if 0 <= py & py <= winy {
-        	if first {
-            	pos cnt, py
-            	first = 0
-        	} else {
-            	line cnt, py
-        	}
-    	} else {
-        	first = 1
-    	}
+		; 数式をJScript側で評価してyへ代入
+		sc->"Eval" replacedExpr
+		y = double(res)
+	
+		playerPy = CY - y * SCALE
+		if 0 <= playerPy & playerPy <= WINY {
+			if firstPlayer {
+				pos cnt, playerPy
+				firstPlayer = 0
+			} else {
+				line cnt, playerPy
+			}
+		} else {
+			firstPlayer = 1
+		}
+
+		x = double(mousex - CX) / SCALE
+		sc->"ExecuteStatement" strf("var x = %f;", x)
+		sc->"Eval" replacedExpr
+		y = double(res)
+		playerPy = CY - y * SCALE
+		circle mousex - 20, playerPy - 20, mousex + 20, playerPy + 20
 	loop
+	
+	firstComp = 1
+	
+	; コンピュータの曲線を描画
+	repeat loopTimes
+		color 0, 0, 255
+		x = double(cnt - CX) / SCALE
+
+		; JScriptで変数xへ代入
+		sc->"ExecuteStatement" strf("var x = %f;", x)
+
+		; 数式をJScript側で評価してyへ代入
+		sc->"Eval" replacedCompExpr
+		y = double(res)
+	
+		compPy = CY - y * SCALE
+		if 0 <= compPy & compPy <= WINY {
+			if firstComp {
+				pos cnt, compPy
+				firstComp = 0
+			} else {
+				line cnt, compPy
+			}
+		} else {
+			firstComp = 1
+		}
+	loop
+	
+	font msgothic, 16
+	pos 0, 0: color 0, 0, 0
+	mes strf("eq: %s", expr)
+	mes strf("eq: %s", compExpr)
+
+	if loopTimes = WINX {
+		; Retryボタン
+		color 255, 0, 0
+		boxf CX - 50, CY + 70, CX + 50, CY + 100
+		color 255, 255, 255
+		font msgothic, 25
+		pos CX - strlen("RETRY") * 6.25, CY + 75
+		mes "RETRY"
+		if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
+			onclick *inputScene
+		}
+	}
+	
 	redraw 1
 	wait 16.6
 
-	goto *main
+	loopTimes += 3
+	if loopTimes > WINX {
+		loopTimes = WINX
+	}
+	
+	goto *mainScene
 
 *endGame
 	end
+
+*replaceFunctionString
+	replacedExpr = expr
+	strrep replacedExpr, "sin", "Math.sin"
+	strrep replacedExpr, "cos", "Math.cos"
+	strrep replacedExpr, "tan", "Math.tan"
+	strrep replacedExpr, "exp", "Math.exp"
+	strrep replacedExpr, "log", "Math.log"
+	strrep replacedExpr, "sqrt", "Math.sqrt"
+	strrep replacedExpr, "abs", "Math.abs"
+
+	replacedCompExpr = compExpr
+	strrep replacedCompExpr, "sin", "Math.sin"
+	strrep replacedCompExpr, "cos", "Math.cos"
+	strrep replacedCompExpr, "tan", "Math.tan"
+	strrep replacedCompExpr, "exp", "Math.exp"
+	strrep replacedCompExpr, "log", "Math.log"
+	strrep replacedCompExpr, "sqrt", "Math.sqrt"
+	strrep replacedCompExpr, "abs", "Math.abs"
+	
+	return
+
+*randomChoiceEquation
+	repeat 3
+		idx = rnd(NUM_FUNCS)
+		compExpr += strf("+%s", funcs.idx)
+	loop
+	return

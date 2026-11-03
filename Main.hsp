@@ -40,7 +40,7 @@ randomize
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
-	; xè»¸ã¨yè»¸
+	; xŽ²‚ÆyŽ²
 	line 0, CY, WINX, CY
 	line CX, 0, CX, WINY
 
@@ -48,7 +48,7 @@ randomize
 	color 120, 0, 0 : pos 10, 10
 	mes "EquationFight"
 	
-	; ã‚¹ã‚¿ãƒ¼ãƒˆãƒœã‚¿ãƒ³
+	; ƒXƒ^[ƒgƒ{ƒ^ƒ“
 	color 255, 0, 0
 	boxf CX - 50, CY + 20, CX + 50, CY + 50
 	color 255, 255, 255
@@ -59,7 +59,7 @@ randomize
 		onclick *inputScene
 	}
 
-	; Quitãƒœã‚¿ãƒ³
+	; Quitƒ{ƒ^ƒ“
 	color 255, 0, 0
 	boxf CX - 50, CY + 70, CX + 50, CY + 100
 	color 255, 255, 255
@@ -79,11 +79,11 @@ randomize
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
-	; xè»¸ã¨yè»¸
+	; xŽ²‚ÆyŽ²
 	line 0, CY, WINX, CY
 	line CX, 0, CX, WINY
 
-	; æ±ºå®š
+	; Œˆ’è
 	color 255, 0, 0
 	boxf CX - 50, CY + 70, CX + 50, CY + 100
 	color 255, 255, 255
@@ -103,7 +103,7 @@ randomize
 	redraw 1
 	stop
 
-; inputã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å‰Šé™¤
+; inputƒIƒuƒWƒFƒNƒg‚Ìíœ
 *hideInput
 	clrobj
 	goto *mainScene
@@ -113,21 +113,21 @@ randomize
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
-	; xè»¸ã¨yè»¸
+	; xŽ²‚ÆyŽ²
 	line 0, CY, WINX, CY
 	line CX, 0, CX, WINY
 	
 	firstPlayer = 1
 
-	; ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ›²ç·šã‚’æç”»
+	; ƒvƒŒƒCƒ„[‚Ì‹Èü‚ð•`‰æ
 	repeat WINX
 		color 255, 0, 0
 		x = double(cnt - CX) / SCALE
 
-		; JScriptã§å¤‰æ•°xã¸ä»£å…¥
+		; JScript‚Å•Ï”x‚Ö‘ã“ü
 		sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
 
-		; æ•°å¼ã‚’JScriptå´ã§è©•ä¾¡ã—ã¦yã¸ä»£å…¥
+		; ”Ž®‚ðJScript‘¤‚Å•]‰¿‚µ‚Äy‚Ö‘ã“ü
 		sc->"Eval" replacedExpr
 		y = double(res)
 	
@@ -142,19 +142,26 @@ randomize
 		} else {
 			firstPlayer = 1
 		}
-	loop
 
+		x = double(mousex - CX) / SCALE
+		sc->"ExecuteStatement" strf("var x = %f;", x)
+		sc->"Eval" replacedExpr
+		y = double(res)
+		playerPy = CY - y * SCALE
+		circle mousex - 20, playerPy - 20, mousex + 20, playerPy + 20
+	loop
+	
 	firstComp = 1
 	
-	; ã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ã®æ›²ç·šã‚’æç”»
+	; ƒRƒ“ƒsƒ…[ƒ^‚Ì‹Èü‚ð•`‰æ
 	repeat loopTimes
 		color 0, 0, 255
 		x = double(cnt - CX) / SCALE
 
-		; JScriptã§å¤‰æ•°xã¸ä»£å…¥
-		sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
+		; JScript‚Å•Ï”x‚Ö‘ã“ü
+		sc->"ExecuteStatement" strf("var x = %f;", x)
 
-		; æ•°å¼ã‚’JScriptå´ã§è©•ä¾¡ã—ã¦yã¸ä»£å…¥
+		; ”Ž®‚ðJScript‘¤‚Å•]‰¿‚µ‚Äy‚Ö‘ã“ü
 		sc->"Eval" replacedCompExpr
 		y = double(res)
 	
@@ -173,11 +180,11 @@ randomize
 	
 	font msgothic, 16
 	pos 0, 0: color 0, 0, 0
-	mes "eq: " + expr
-	mes "eq: " + compExpr
+	mes strf("eq: %s", expr)
+	mes strf("eq: %s", compExpr)
 
 	if loopTimes = WINX {
-		; Retryãƒœã‚¿ãƒ³
+		; Retryƒ{ƒ^ƒ“
 		color 255, 0, 0
 		boxf CX - 50, CY + 70, CX + 50, CY + 100
 		color 255, 255, 255
