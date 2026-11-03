@@ -7,6 +7,7 @@
 #const CX WINX / 2.0
 #const CY WINY / 2.0
 #const SCALE 40.0
+#const NUM_FUNCS 5
 
 title "EquationFight"
 screen 0, WINX, WINY
@@ -18,6 +19,15 @@ expr = "sin(x) * 2 + cos(x * 3)"
 replacedExpr = ""
 
 comres res
+
+loopTimes = 0
+
+sdim funcs, 64, NUM_FUNCS
+funcs.0 = "sin"
+funcs.1 = "cos"
+funcs.2 = "tan"
+funcs.3 = "log"
+funcs.4 = "sqrt"
 
 *titleScene
 	gosub *replaceFunctionString
@@ -103,7 +113,7 @@ comres res
 	
 	color 255, 0, 0
 	first = 1
-	repeat WINX
+	repeat loopTimes
 		x = double(cnt - CX) / SCALE
 
 		; JScriptで変数xへ代入
@@ -131,6 +141,11 @@ comres res
 	redraw 1
 	wait 16.6
 
+	loopTimes += 3
+	if loopTimes > WINX {
+		loopTimes = WINX
+	}
+
 	goto *mainScene
 
 *endGame
@@ -144,4 +159,8 @@ comres res
 	strrep replacedExpr, "exp", "Math.exp"
 	strrep replacedExpr, "log", "Math.log"
 	strrep replacedExpr, "sqrt", "Math.sqrt"
+	return
+
+*randomChoiceEquation
+	
 	return
