@@ -22,6 +22,7 @@ comres res
 *titleScene
 	gosub *replaceFunctionString
 	redraw 0
+	
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
@@ -29,6 +30,10 @@ comres res
 	line 0, CY, WINX, CY
 	line CX, 0, CX, WINY
 
+	font msgothic, 50
+	color 120, 0, 0 : pos 10, 10
+	mes "EquationFight"
+	
 	; スタートボタン
 	color 255, 0, 0
 	boxf CX - 50, CY + 20, CX + 50, CY + 50
