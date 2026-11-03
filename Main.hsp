@@ -1,15 +1,14 @@
 #cmpopt optcode 1
 #const WINX 640
 #const WINY 480
+#const CX WINX / 2.0
+#const CY WINY / 2.0
+#const SCALE 40.0
 
 screen 0, WINX, WINY
 
 newcom sc, "MSScriptControl.ScriptControl"
 sc("Language") = "JScript"
-
-cx = WINX / 2.0
-cy = WINY / 2.0
-scale = 40.0
 
 expr = "Math.sin(x) * 2 + Math.cos(x * 3)"
 
@@ -20,29 +19,29 @@ comres res
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
-	; x軸とy軸
-	line 0, cy, WINX, cy
-	line cx, 0, cx, WINY
+	; x霆ｸ縺ｨy霆ｸ
+	line 0, CY, WINX, CY
+	line CX, 0, CX, WINY
 
-	; スタートボタン
+	; 繧ｹ繧ｿ繝ｼ繝医�懊ち繝ｳ
 	color 255, 0, 0
-	boxf cx - 50, cy + 20, cx + 50, cy + 50
+	boxf CX - 50, CY + 20, CX + 50, CY + 50
 	color 255, 255, 255
 	font msgothic, 25
-	pos cx - strlen("START") * 6.25, cy + 25
+	pos CX - strlen("START") * 6.25, CY + 25
 	mes "START"
-	if cx - 50 <= mousex & mousex <= cx + 50 & cy +20 <= mousey & mousey <= cy + 50 {
+	if CX - 50 <= mousex & mousex <= CX + 50 & CY + 20 <= mousey & mousey <= CY + 50 {
 		onclick *main
 	}
 
-	; Quitボタン
+	; Quit繝懊ち繝ｳ
 	color 255, 0, 0
-	boxf cx - 50, cy + 70, cx + 50, cy + 100
+	boxf CX - 50, CY + 70, CX + 50, CY + 100
 	color 255, 255, 255
 	font msgothic, 25
-	pos cx - strlen("QUIT") * 6.25, cy + 75
+	pos CX - strlen("QUIT") * 6.25, CY + 75
 	mes "QUIT"
-	if cx - 50 <= mousex & mousex <= cx + 50 & cy +70 <= mousey & mousey <= cy + 100 {
+	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
 		onclick *endGame
 	}
 	redraw 1
@@ -55,33 +54,33 @@ comres res
 	color 255, 255, 255 : boxf
 	color 180, 180, 180
 
-	; x軸とy軸
-	line 0, cy, WINX, cy
-	line cx, 0, cx, WINY
+	; x霆ｸ縺ｨy霆ｸ
+	line 0, CY, WINX, CY
+	line CX, 0, CX, WINY
 	
 	color 255, 0, 0
 	first = 1
 	repeat WINX
-    	x = double(cnt - cx) / scale
+		x = double(cnt - CX) / SCALE
 
-    	; JScriptで変数xへ代入
-    	sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
+		; JScript縺ｧ螟画焚x縺ｸ莉｣蜈･
+		sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
 
-    	; 数式をJScript側で評価してyへ代入
-    	sc->"Eval" expr
-    	y = double(res)
-    
-    	py = cy - y * scale
-    	if 0 <= py & py <= winy {
-        	if first {
-            	pos cnt, py
-            	first = 0
-        	} else {
-            	line cnt, py
-        	}
-    	} else {
-        	first = 1
-    	}
+		; 謨ｰ蠑上ｒJScript蛛ｴ縺ｧ隧穂ｾ｡縺励※y縺ｸ莉｣蜈･
+		sc->"Eval" expr
+		y = double(res)
+	
+		py = CY - y * SCALE
+		if 0 <= py & py <= WINY {
+			if first {
+				pos cnt, py
+				first = 0
+			} else {
+				line cnt, py
+			}
+		} else {
+			first = 1
+		}
 	loop
 	redraw 1
 	wait 16.6
