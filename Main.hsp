@@ -15,19 +15,23 @@ screen 0, WINX, WINY
 newcom sc, "MSScriptControl.ScriptControl"
 sc("Language") = "JScript"
 
+compExpr = ""
 expr = "sin(x) * 2 + cos(x * 3)"
 replacedExpr = ""
+replacedCompExpr = ""
 
 comres res
 
 loopTimes = 0
 
 sdim funcs, 64, NUM_FUNCS
-funcs.0 = "sin"
-funcs.1 = "cos"
-funcs.2 = "tan"
-funcs.3 = "log"
-funcs.4 = "sqrt"
+funcs.0 = "sin(x)"
+funcs.1 = "cos(x)"
+funcs.2 = "tan(x)"
+funcs.3 = "log(abs(x))"
+funcs.4 = "sqrt(abs(x))"
+
+randomize
 
 *titleScene
 	gosub *replaceFunctionString
@@ -87,6 +91,7 @@ funcs.4 = "sqrt"
 	pos CX - strlen("SUBMIT") * 6.25, CY + 75
 	mes "SUBMIT"
 	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
+		gosub *randomChoiceEquation
 		gosub *replaceFunctionString
 		onclick *hideInput
 	}
@@ -111,9 +116,11 @@ funcs.4 = "sqrt"
 	line 0, CY, WINX, CY
 	line CX, 0, CX, WINY
 	
-	color 255, 0, 0
-	first = 1
-	repeat loopTimes
+	firstPlayer = 1
+
+	; プレイヤーの曲線を描画
+	repeat WINX
+		color 255, 0, 0
 		x = double(cnt - CX) / SCALE
 
 		; JScriptで変数xへ代入
@@ -123,21 +130,50 @@ funcs.4 = "sqrt"
 		sc->"Eval" replacedExpr
 		y = double(res)
 	
-		py = CY - y * SCALE
-		if 0 <= py & py <= WINY {
-			if first {
-				pos cnt, py
-				first = 0
+		playerPy = CY - y * SCALE
+		if 0 <= playerPy & playerPy <= WINY {
+			if firstPlayer {
+				pos cnt, playerPy
+				firstPlayer = 0
 			} else {
-				line cnt, py
+				line cnt, playerPy
 			}
 		} else {
-			first = 1
+			firstPlayer = 1
 		}
 	loop
+
+	firstComp = 1
+	
+	; コンピュータの曲線を描画
+	repeat loopTimes
+		color 0, 0, 255
+		x = double(cnt - CX) / SCALE
+
+		; JScriptで変数xへ代入
+		sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
+
+		; 数式をJScript側で評価してyへ代入
+		sc->"Eval" replacedCompExpr
+		y = double(res)
+	
+		compPy = CY - y * SCALE
+		if 0 <= compPy & compPy <= WINY {
+			if firstComp {
+				pos cnt, compPy
+				firstComp = 0
+			} else {
+				line cnt, compPy
+			}
+		} else {
+			firstComp = 1
+		}
+	loop
+	
 	font msgothic, 16
 	pos 0, 0: color 0, 0, 0
 	mes "eq: " + expr
+	mes "eq: " + compExpr
 	redraw 1
 	wait 16.6
 
@@ -159,8 +195,22 @@ funcs.4 = "sqrt"
 	strrep replacedExpr, "exp", "Math.exp"
 	strrep replacedExpr, "log", "Math.log"
 	strrep replacedExpr, "sqrt", "Math.sqrt"
+	strrep replacedExpr, "abs", "Math.abs"
+
+	replacedCompExpr = compExpr
+	strrep replacedCompExpr, "sin", "Math.sin"
+	strrep replacedCompExpr, "cos", "Math.cos"
+	strrep replacedCompExpr, "tan", "Math.tan"
+	strrep replacedCompExpr, "exp", "Math.exp"
+	strrep replacedCompExpr, "log", "Math.log"
+	strrep replacedCompExpr, "sqrt", "Math.sqrt"
+	strrep replacedCompExpr, "abs", "Math.abs"
+	
 	return
 
 *randomChoiceEquation
-	
+	repeat 3
+		idx = rnd(NUM_FUNCS)
+		compExpr += strf("+%s", funcs.idx)
+	loop
 	return
