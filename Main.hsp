@@ -5,6 +5,7 @@
 #const CY WINY / 2.0
 #const SCALE 40.0
 
+title "EquationFight"
 screen 0, WINX, WINY
 
 newcom sc, "MSScriptControl.ScriptControl"
