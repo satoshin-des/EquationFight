@@ -140,4 +140,8 @@ comres res
 	replacedExpr = expr
 	strrep replacedExpr, "sin", "Math.sin"
 	strrep replacedExpr, "cos", "Math.cos"
+	strrep replacedExpr, "tan", "Math.tan"
+	strrep replacedExpr, "exp", "Math.exp"
+	strrep replacedExpr, "log", "Math.log"
+	strrep replacedExpr, "sqrt", "Math.sqrt"
 	return
