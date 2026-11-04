@@ -1,6 +1,5 @@
 #cmpopt optcode 1
 
-#include "d3m.hsp"
 #include "user32.as"
 
 #const WINX 640
@@ -26,11 +25,11 @@ comres res
 loopTimes = 0
 
 sdim funcs, 64, NUM_FUNCS
-funcs.0 = "sin(x)"
-funcs.1 = "cos(x)"
-funcs.2 = "tan(x)"
-funcs.3 = "log(abs(x))"
-funcs.4 = "sqrt(abs(x))"
+funcs.0 = "sin"
+funcs.1 = "cos"
+funcs.2 = "tan"
+funcs.3 = "abs"
+funcs.4 = ""
 
 ddim playerCurv, WINX
 ddim compCurv, WINY
@@ -73,12 +72,6 @@ randomize
 	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
 		onclick *endGame
 	}
-
-	font msgothic, 20
-	color 0, 0, 0
-	fpsStr = strf("%dFPS", d3getfps())
-	pos WINX - strlen(fpsStr) * 10 - 1, WINY - 21
-	mes strf("%s", fpsStr)
 	
 	redraw 1
 	await 16.6
@@ -103,6 +96,7 @@ randomize
 	mes "SUBMIT"
 	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
 		loopTimes = 0
+		compExpr = ""
 		gosub *randomChoiceEquation
 		gosub *replaceFunctionString
 		gosub *StoreCurve
@@ -142,16 +136,13 @@ randomize
 				pos cnt, playerPy
 				firstPlayer = 0
 			} else {
+				line cnt, playerPy + 1
 				line cnt, playerPy
+				line cnt, playerPy - 1
 			}
 		} else {
 			firstPlayer = 1
 		}
-
-		x = int(mousex)
-		y = playerCurv.x
-		playerPy = CY - y * SCALE
-		circle x - 20, playerPy - 20, x + 20, playerPy + 20
 	loop
 	
 	firstComp = 1
@@ -167,7 +158,9 @@ randomize
 				pos cnt, compPy
 				firstComp = 0
 			} else {
+				line cnt, compPy + 1
 				line cnt, compPy
+				line cnt, compPy - 1
 			}
 		} else {
 			firstComp = 1
@@ -180,6 +173,10 @@ randomize
 	mes strf("eq: %s", compExpr)
 
 	if loopTimes = WINX {
+		font msgothic, 50
+		pos CX - strlen("YOU WIN!!") * 12.5, 20
+		mes "YOU WIN!!"
+		
 		; Retryボタン
 		color 255, 0, 0
 		boxf CX - 50, CY + 70, CX + 50, CY + 100
@@ -190,13 +187,15 @@ randomize
 		if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
 			onclick *inputScene
 		}
+	} else {
+		; 自機の表示
+		circleX = int(mousex)
+		y = playerCurv.circleX
+		circleY = CY - y * SCALE
 	}
 
-	font msgothic, 20
-	color 0, 0, 0
-	fpsStr = strf("%dFPS", d3getfps())
-	pos WINX - strlen(fpsStr) * 10 - 1, WINY - 21
-	mes strf("%s", fpsStr)
+	color 255, 0, 0
+	circle circleX - 20, circleY - 20, circleX + 20, circleY + 20
 	
 	redraw 1
 	await 16
@@ -220,6 +219,7 @@ randomize
 	strrep replacedExpr, "log", "Math.log"
 	strrep replacedExpr, "sqrt", "Math.sqrt"
 	strrep replacedExpr, "abs", "Math.abs"
+	strrep replacedExpr, "cbrt", "Math.cbrt"
 
 	replacedCompExpr = compExpr
 	strrep replacedCompExpr, "sin", "Math.sin"
@@ -229,14 +229,17 @@ randomize
 	strrep replacedCompExpr, "log", "Math.log"
 	strrep replacedCompExpr, "sqrt", "Math.sqrt"
 	strrep replacedCompExpr, "abs", "Math.abs"
+	strrep replacedCompExpr, "cbrt", "Math.cbrt"
 	
 	return
 
 *randomChoiceEquation
-	repeat 3
+	sumOfFuncs = rnd(3)
+	repeat sumOfFuncs
 		idx = rnd(NUM_FUNCS)
-		compExpr += strf("+%s", funcs.idx)
+		compExpr += strf("+%s(%f*x+(%f))", funcs.idx, double(rnd(500)) * 0.01, double(rnd(200)) * 0.01 - 1)
 	loop
+	compEXpr += strf("+%f", double(rnd(100)) * 0.01)
 	return
 
 *StoreCurve
