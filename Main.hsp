@@ -158,17 +158,13 @@ randomize
 		y = compCurv.cnt
 	
 		compPy = CY - y * SCALE
-		if 0 <= compPy & compPy <= WINY {
-			if firstComp {
-				pos cnt, compPy
-				firstComp = 0
-			} else {
-				line cnt, compPy + 1
-				line cnt, compPy
-				line cnt, compPy - 1
-			}
+		if firstComp {
+			pos cnt, compPy
+			firstComp = 0
 		} else {
-			firstComp = 1
+			line cnt, compPy + 1
+			line cnt, compPy
+			line cnt, compPy - 1
 		}
 
 		dx = cnt - circleX
@@ -187,22 +183,22 @@ randomize
 	if loopTimes = WINX {
 		font msgothic, 50
 		if isWin {
-			pos CX - strlen("YOU WIN!!") * 12.5, 20
-			mes "YOU WIN!!"
+			gosub *ResetCompCurv
+			loopTimes = 0
 		} else {
 			pos CX - strlen("YOU LOSE!!") * 12.5, 20
 			mes "YOU LOSE!!"
-		}
-		
-		; Retryボタン
-		color 255, 0, 0
-		boxf CX - 50, CY + 70, CX + 50, CY + 100
-		color 255, 255, 255
-		font msgothic, 25
-		pos CX - strlen("RETRY") * 6.25, CY + 75
-		mes "RETRY"
-		if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
-			onclick *inputScene
+
+			; Retryボタン
+			color 255, 0, 0
+			boxf CX - 50, CY + 70, CX + 50, CY + 100
+			color 255, 255, 255
+			font msgothic, 25
+			pos CX - strlen("RETRY") * 6.25, CY + 75
+			mes "RETRY"
+			if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
+				onclick *inputScene
+			}
 		}
 	} else {
 		; 自機の表示
@@ -251,12 +247,9 @@ randomize
 	return
 
 *randomChoiceEquation
-	sumOfFuncs = rnd(3)
-	repeat sumOfFuncs
-		idx = rnd(NUM_FUNCS)
-		compExpr += strf("+%s(%f*x+(%f))", funcs.idx, double(rnd(500)) * 0.01, double(rnd(200)) * 0.01 - 1)
-	loop
-	compEXpr += strf("+%f", double(rnd(100)) * 0.01)
+	idx = rnd(NUM_FUNCS)
+	compExpr += strf("+%s(%f*x+(%f))", funcs.idx, double(rnd(500)) * 0.01, double(rnd(200)) * 0.01 - 1)
+	compEXpr += strf("+%f", double(rnd(100) - 50) * 0.01)
 	return
 
 *StoreCurve
@@ -270,4 +263,10 @@ randomize
 		sc->"Eval" replacedCompExpr
 		compCurv.cnt = double(res)
 	loop
+	return
+
+*ResetCompCurv
+	gosub *randomChoiceEquation
+	gosub *replaceFunctionString
+	gosub *StoreCurve
 	return
