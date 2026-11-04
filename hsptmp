@@ -1,5 +1,6 @@
 #cmpopt optcode 1
 
+#include "d3m.hsp"
 #include "user32.as"
 
 #const WINX 640
@@ -30,6 +31,9 @@ funcs.1 = "cos(x)"
 funcs.2 = "tan(x)"
 funcs.3 = "log(abs(x))"
 funcs.4 = "sqrt(abs(x))"
+
+ddim playerCurv, WINX
+ddim compCurv, WINY
 
 randomize
 
@@ -69,8 +73,15 @@ randomize
 	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
 		onclick *endGame
 	}
+
+	font msgothic, 20
+	color 0, 0, 0
+	fpsStr = strf("%dFPS", d3getfps())
+	pos WINX - strlen(fpsStr) * 10 - 1, WINY - 21
+	mes strf("%s", fpsStr)
+	
 	redraw 1
-	wait 16.6
+	await 16.6
 	
 	goto *titleScene
 
@@ -94,6 +105,7 @@ randomize
 		loopTimes = 0
 		gosub *randomChoiceEquation
 		gosub *replaceFunctionString
+		gosub *StoreCurve
 		onclick *hideInput
 	}
 	
@@ -120,16 +132,9 @@ randomize
 	firstPlayer = 1
 
 	; ƒvƒŒƒCƒ„[‚Ì‹Èü‚ð•`‰æ
+	color 255, 0, 0
 	repeat WINX
-		color 255, 0, 0
-		x = double(cnt - CX) / SCALE
-
-		; JScript‚Å•Ï”x‚Ö‘ã“ü
-		sc->"ExecuteStatement" "var x = " + strf("%f", x) + ";"
-
-		; ”Ž®‚ðJScript‘¤‚Å•]‰¿‚µ‚Äy‚Ö‘ã“ü
-		sc->"Eval" replacedExpr
-		y = double(res)
+		y = playerCurv.cnt
 	
 		playerPy = CY - y * SCALE
 		if 0 <= playerPy & playerPy <= WINY {
@@ -143,27 +148,18 @@ randomize
 			firstPlayer = 1
 		}
 
-		x = double(mousex - CX) / SCALE
-		sc->"ExecuteStatement" strf("var x = %f;", x)
-		sc->"Eval" replacedExpr
-		y = double(res)
+		x = int(mousex)
+		y = playerCurv.x
 		playerPy = CY - y * SCALE
-		circle mousex - 20, playerPy - 20, mousex + 20, playerPy + 20
+		circle x - 20, playerPy - 20, x + 20, playerPy + 20
 	loop
 	
 	firstComp = 1
 	
 	; ƒRƒ“ƒsƒ…[ƒ^‚Ì‹Èü‚ð•`‰æ
+	color 0, 0, 255
 	repeat loopTimes
-		color 0, 0, 255
-		x = double(cnt - CX) / SCALE
-
-		; JScript‚Å•Ï”x‚Ö‘ã“ü
-		sc->"ExecuteStatement" strf("var x = %f;", x)
-
-		; ”Ž®‚ðJScript‘¤‚Å•]‰¿‚µ‚Äy‚Ö‘ã“ü
-		sc->"Eval" replacedCompExpr
-		y = double(res)
+		y = compCurv.cnt
 	
 		compPy = CY - y * SCALE
 		if 0 <= compPy & compPy <= WINY {
@@ -195,9 +191,15 @@ randomize
 			onclick *inputScene
 		}
 	}
+
+	font msgothic, 20
+	color 0, 0, 0
+	fpsStr = strf("%dFPS", d3getfps())
+	pos WINX - strlen(fpsStr) * 10 - 1, WINY - 21
+	mes strf("%s", fpsStr)
 	
 	redraw 1
-	wait 16.6
+	await 16
 
 	loopTimes += 3
 	if loopTimes > WINX {
@@ -234,5 +236,18 @@ randomize
 	repeat 3
 		idx = rnd(NUM_FUNCS)
 		compExpr += strf("+%s", funcs.idx)
+	loop
+	return
+
+*StoreCurve
+	repeat WINX
+		; JScript‚Å•Ï”x‚Ö‘ã“ü
+		sc->"ExecuteStatement" strf("var x = %f;", double(cnt - CX) / SCALE)
+		
+		sc->"Eval" replacedExpr
+		playerCurv.cnt = double(res)
+
+		sc->"Eval" replacedCompExpr
+		compCurv.cnt = double(res)
 	loop
 	return
