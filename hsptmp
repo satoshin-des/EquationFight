@@ -34,6 +34,10 @@ funcs.4 = ""
 ddim playerCurv, WINX
 ddim compCurv, WINY
 
+circleX = CX
+circleY = CY
+isWin = 1
+
 randomize
 
 *titleScene
@@ -96,6 +100,7 @@ randomize
 	mes "SUBMIT"
 	if CX - 50 <= mousex & mousex <= CX + 50 & CY +70 <= mousey & mousey <= CY + 100 {
 		loopTimes = 0
+		isWin = 1
 		compExpr = ""
 		gosub *randomChoiceEquation
 		gosub *replaceFunctionString
@@ -165,17 +170,29 @@ randomize
 		} else {
 			firstComp = 1
 		}
+
+		dx = cnt - circleX
+		dy = compPy - circleY
+		if dx * dx + dy * dy < 400 {
+			loopTimes = WINX
+			isWin = 0
+		}
 	loop
 	
 	font msgothic, 16
 	pos 0, 0: color 0, 0, 0
-	mes strf("eq: %s", expr)
-	mes strf("eq: %s", compExpr)
+	mes strf("player's eq  : %s", expr)
+	mes strf("computer's eq: %s", compExpr)
 
 	if loopTimes = WINX {
 		font msgothic, 50
-		pos CX - strlen("YOU WIN!!") * 12.5, 20
-		mes "YOU WIN!!"
+		if isWin {
+			pos CX - strlen("YOU WIN!!") * 12.5, 20
+			mes "YOU WIN!!"
+		} else {
+			pos CX - strlen("YOU LOSE!!") * 12.5, 20
+			mes "YOU LOSE!!"
+		}
 		
 		; Retryƒ{ƒ^ƒ“
 		color 255, 0, 0
